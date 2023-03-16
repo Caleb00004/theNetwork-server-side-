@@ -6,7 +6,7 @@
 * [Project Status](#Project-Status)
 
 # About
-The Rest API for my 'theNetwork' Application whivh is still under developement.
+The Rest API for my 'theNetwork' Application which is still under developement.
 
 ## Built With
 - ExpressJS
@@ -15,4 +15,4 @@ The Rest API for my 'theNetwork' Application whivh is still under developement.
 - Javascript
 
 ## Project Status
-   project is: still under development
+   Project Is: still under development

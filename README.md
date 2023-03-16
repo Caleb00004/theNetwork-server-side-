@@ -2,8 +2,8 @@
 
 # Table of Contents
 * [About](#About)
-* [Built With](#Built With)
-* [Project Status](#Project Status)
+* [Built With](#Built-With)
+* [Project Status](#Project-Status)
 
 # About
 The Rest API for my 'theNetwork' Application whivh is still under developement.

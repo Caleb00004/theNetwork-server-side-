@@ -5,10 +5,6 @@ const User = require('./models/userScheema')
 const multer = require('multer')
 const mid = require('./middleware/index')
 const cors = require('cors')
-// const bcrypt = require('bcryptjs')
-
-const myVariable = require('./myVariable') // Path To Variable
-
 const authRoutes = require('./routes/auth')
 const session = require('express-session')
 const app = express()
@@ -31,6 +27,7 @@ app.use((req,res,next) => {
     console.log('Host: ', req.hostname)
     console.log('Path: ', req.path)
     console.log('Method: ', req.method)
+        
     next()
 })
 
@@ -46,22 +43,11 @@ app.use(session({
     //   }
 }))
 
-// app.locals.userData = ""
-// app.locals.userData = myVariable.myVars.currentUser
-
 // making session available to whole app
 app.use((req, res, next) => {
     res.locals.currentUser = req.session.userId 
-    res.locals.userData = myVariable.myVars.currentUser
-    // console.log(res.locals)
-    // console.log(app.locals)
-    // res.locals.userData = {}
-    console.log('ENTERS FIRST!!!')
-    // console.log(myVariable.currentUser)
-    // console.log(app.locals.userData)
-    
+    console.log("SECOND MIDDLE FUNC")
     next();
-
 })
 
 app.use(cors({
@@ -69,95 +55,58 @@ app.use(cors({
     credentials: true
 }))
 
-// middleware for accepting form data
-app.use(express.urlencoded()) 
+app.use(express.urlencoded()) // middleware for accepting form data
 app.use(express.json()) // To parse any json gotten from the request. so it can be readable
 
-// const setStatus = (req, res, next) => {
-//     if (operationInProgress) {
-//       res.statusMessage = 'pending'
-//     } else {
-//       res.statusMessage = 'fulfilled'
-//     }
-//     next()
-// }
-
-app.get('/', (req,res) => {
-    console.log(req.session.userId)
-
+app.get('/', (req, res) => {
     // User.find({"posts":{"$exists":true}})
     //     .then((data) => {
     //         console.log(data)
     //     })
     //     .catch(err => console.log(err))
-
     res.json({
-        name: 'caleb',
-        age: '23'
+        status: 201,
+        message: "No Data on this route, try GET '/all-post', '/logged-in' "
     })
 })
 
 // To check if user is logged IN 
 app.get('/logged-in', (req, res) => {
-    console.log('CHECKINGIF LOGED IN')
-
-    console.log(res.locals.userData)
     if (req.session.userId) {
-        return res.send({...req.session, userData: res.locals.userData})
+        return res.send({...req.session })
     } else {
         return res.send({loggedIn: false, userId: '', userData: {}})
     }
 })
 
 // To Handle Logging Out
-app.post('/logout', (req, res) => {
-    if (req.session.userId) {
-    
-        req.session.destroy((err) => {
-            if (err) {
-                console.log(err)
-                return next(err)            
-            }
-    
-            return res.json({
-                status: 201,
-                message: 'You are logged out'
-            })
-        })
-    } else {
-        res.json({
+app.post('/logout', mid.requiresLogin ,(req, res) => {
+
+    req.session.destroy((err) => {
+        if (err) {
+            // console.log(err)
+            return next(err)            
+        }
+
+        return res.json({
             status: 201,
-            message: 'You are not Logged in'
+            message: 'You are logged out'
         })
-    }
+    })
+
 })
 
 // To get All Posts Data
-app.get('/filter', (req,res) => {
-
-    User.find({}, {posts: 1, _id: 0})
-        .then ((data) => {
-            // console.log(data)
-
-            /* 
-                // logic to map through and display individual Post Item
-
-                data.map(item => {
-                    item.posts.map(postItem => (
-                        console.log(postItem)
-                    ))
-                })
-            */
-
+app.get('/all-post', (req,res,next) => {
+    Posts.find()
+        .then(data => (
+            console.log(data),
             res.json(data)
-        })
-        .catch((err) => {
-            return next(err)
-        }
-            )
+        ))
+        .catch(err => next(err))
 })
 
-// Authentication ROutes (Sign-up/ log-in)
+// Authentication Routes (Sign-up/ log-in)
 app.use(authRoutes)
 
 
@@ -171,10 +120,8 @@ app.get('/find-user', (req, res, next) => {
         .catch((err) => {
             next(err)
         })
-
-        // updateOne('which doc to update', 'which fields to update')
+    // updateOne('which doc to update', 'which fields to update')
     // User.updateOne({_id: 'id of book'}, {$set: {posts: [data]}})
-
 })
 
 // To update User Documents
@@ -182,9 +129,6 @@ app.patch('/update', mid.requiresLogin , (req, res, next) => {
     console.log('UPDATE IYA YIN')
     const {...items} = req.body
     
-    myVariable.updateComments(items.posts)
-    // console.log(items.post)
-
     User.updateOne({_id: req.session.userId}, {$set: {...items}})
         .then((data) => {
             res.json({
@@ -197,32 +141,40 @@ app.patch('/update', mid.requiresLogin , (req, res, next) => {
         })
 })
 
-// app.patch('/add-comment', (req, res, next) => {
-//     // User.updateOne({_id: req.session.userId}, {$push: {posts: newPost}})
-//     console.log('called')
-//     User.updateOne(
-//         {_id: req.session.userId},
-//         {$push : 
-//             {
-//                 "posts.$[].comments" : 
-//                     {
-//                         "name": "Second Comment",
-//                         "comment": "I commented"
-//                     }
-//             }}
-//         )
-//             .then((data) => {
-//                 res.send("comment Posted")
-//             })
-//             .catch((err) => {
-//                 next(err)
-//             })
-// })
+app.patch('/add-comment', mid.requiresLogin , (req,res,next) => {
 
+    const {postId, comment, authorName, authorUserName} = req.body
+
+    Posts.updateOne({_id: postId}, {$push: {comments: {comment, authorName, authorUserName}}})
+        .then((data) => {
+            // console.log(data)
+            res.json({
+                status: 201,
+                message: 'Your Comment Has Being Posted'
+            })
+        })
+        .catch(err => next(err))
+
+})
+
+// route to add to likedPost 
+app.patch('/add-like', mid.requiresLogin , (req,res,next) => {
+
+    const {postData, comment, authorName, authorUserName} = req.body
+
+    User.updateOne({_id: req.session.userId}, {$push: {likedPost: postData}})
+        .then((data) => {
+            res.json({
+                status: 201,
+                message: 'Your Comment Has Being Posted'
+            })
+        })
+        .catch(err => next(err))
+
+})
 
 // code to handle Creating & Saving New Post
-app.post('/new-post', async (req, res, next) => {
-    if (req.session.userId) {
+app.post('/new-post', mid.requiresLogin , async (req, res, next) => {
         const {authorName, authorUserName, body} = req.body
         console.log(req.body)
 
@@ -232,27 +184,46 @@ app.post('/new-post', async (req, res, next) => {
             authorName,
             body: body,
         })
+          
+        const pipeline = [
+            // db.users.aggregate({$lookup: {from: "posts", localField: "username", foreignField: "authorUserName", as: "addr"}})
+            {
+                $lookup: {
+                from: 'posts',
+                localField: 'username',
+                foreignField: 'authorUserName',
+                as: 'posts'
+                }
+            },
+            // {$out: "users"}
+        ];
 
-        function saveToPostArray() {
-            // Save Post to User's Post Array.
-            User.updateOne({_id: req.session.userId}, {$push: {posts: newPost}})
-            .then((data) => {
-                console.log(data)
+        function updateCurrentUser() {
+            User.aggregate(pipeline)
+            .then(data => {
+                const {userData} = req.session
+                // console.log(data)
+                const filtered = data.filter(data => data.username == userData.username)
+                console.log(filtered)
+                req.session.userData = filtered[0]
+
                 res.json({
                     status: 201,
-                    message: "Post saved to User"
+                    message: "Post successfully created",
+                    userData: req.session.userData
                 })
             })
-            .catch((err) => {
-                next(err)
-            })
+            .catch(err => next(err))
         }
+    
+        // handleAggregate() 
 
         // Saving To Post Collection
-        newPost.save()
+        newPost.save()  //, User.aggregate(pipeline)
             .then((data) => {
+                console.log("SAVED TO POST COLLECTION")
                 console.log(data)
-                saveToPostArray()
+                updateCurrentUser()
                 // res.json({
                 //     status: 201,
                 //     message: "Post successfully created"
@@ -262,14 +233,6 @@ app.post('/new-post', async (req, res, next) => {
                 next(err)
             }) 
 
-    } else {
-        let err = {
-            status: 401,
-            message: 'You need to be logged In'
-        }
-        next(err)
-    }
-    console.log(req.session.userId)
 })
 
 
@@ -285,3 +248,36 @@ app.use((err, req, res, next) => {
 })
 
 exports.testVar = testVar;
+
+// const saveInPostAndUser = async (session) => {
+//     // update in post Array
+//     const svaeInPost =  await newPost.save({session})
+
+//     // save in array
+//     const saveToArray = await User.updateOne(
+//         { _id: req.session.userId},
+//         {$push: {posts: newPost} },
+//         { new: true, session }
+//     )
+    
+//     console.log(`User has being Updated`)
+// }
+
+// const syncSession = await mongoose.startSession();
+
+// try {
+// await syncSession.withTransaction(async () => {
+//     await saveInPostAndUser(syncSession);
+// });
+//     console.log('Transaction committed successfully!');
+//     res.json({
+//         status: 201,
+//         message: 'Post Saved Successfully'
+//     })
+// } catch (error) {
+//     console.log('AN ERROR OCCURED')
+//     console.error(error);
+//     next(error)
+// } finally {
+//     syncSession.endSession();
+// }

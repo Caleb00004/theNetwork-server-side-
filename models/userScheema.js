@@ -32,15 +32,16 @@ const userScheema = new Scheema({
         type: String,
         default: '/path/to/image',
     },
-    age: {
-        type: Number,
-        required: true
-    },
-    posts: {
-        type: Array
-    },
+    // likedPost
+    // age: {
+    //     type: Number,
+    //     required: true
+    // },
+    // posts: {
+    //     type: Array
+    // },
     dateOfBirth: {
-        type: Date,
+        type: String,
         required: false,
         default: 'xxx-xx-xxx'
     },

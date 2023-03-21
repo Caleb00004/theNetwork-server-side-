@@ -7,6 +7,7 @@ function requiresLogin(req, res, next) {
             status: 401,
             message: 'User Not Logged In'
         }
+        next(err)
     }
 }
 

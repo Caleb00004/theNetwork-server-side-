@@ -5,31 +5,21 @@ const mid = require('../middleware/index')
 // const myModule = require('../index')
 // const {loggeIn} = require('../index')
 const router = express.Router()
-const myVariable = require('../myVariable')
 
 
 // code to handle Signinig up / creating User
 router.post('/sign-up', mid.AlreadyLogged , (req, res, next) => {
-    const users = req.body // I'm receiving a json obj, express.json() is what is making this readable
-    // const {name, number, age, password, email, username} = req.body
-
-    // const newUser = new User ({
-    //     name,
-    //     number,
-    //     email,
-    //     age,
-    //     password,
-    //     username
-    // })
-    
+    // Note: I'm receiving json obj from req & express.json() is the req.body object readable. 
     const newUser = new User ({...req.body})
 
     newUser.save()
         .then ((data) => {
             console.log(data)
-            req.session.userId = data._id
             const {name, username, bio, photo, posts, age, _id} = data
-            myVariable.updateMyVariable({name, username, bio, photo, posts, age, _id})
+
+            req.session.userId = data._id
+            req.session.userData = {name, username, bio, photo, age, posts, _id}
+
             res.json({
                 'user': 'A new User Has being Created'
             })
@@ -41,9 +31,6 @@ router.post('/sign-up', mid.AlreadyLogged , (req, res, next) => {
 
 // code to handle Log IN
 router.post('/log-in', async (req, res, next) => {
-    console.log(req.body)
-    console.log(req.session)
-    console.log(req.session.userId)
     try {
         // check if the user exists
         const user = await User.findOne({ email: req.body.email });
@@ -53,16 +40,44 @@ router.post('/log-in', async (req, res, next) => {
           if (result) { 
             req.session.userId = user._id
             const {name, username, bio, photo, posts, age, _id} = user
-            myVariable.updateMyVariable({name, username, bio, photo, posts, age, _id})
-            // myVariable.updateMyVariable(user)
-            // console.log(myVariable.currentUser)
-            // console.log(req.session)
-            // console.log('succesfully logged in')
-            res.json({
-                loggedIn: true,
-                userId: req.session.userId,
-                userData: user
-            })
+            req.session.userData = {name, username, bio, photo, age, posts, _id}
+
+            const pipeline = [
+                {
+                    $lookup: {
+                    from: 'posts',
+                    localField: 'username',
+                    foreignField: 'authorUserName',
+                    as: 'posts'
+                    }
+                },
+                // {$out: "users"}
+            ];
+    
+            function updateCurrentUser() {
+                User.aggregate(pipeline)
+                .then(data => {
+                    const {userData} = req.session
+                    // console.log(data)
+                    const filtered = data.filter(data => data.username == userData.username)
+                    console.log(filtered)
+                    req.session.userData = filtered[0]
+                    
+                    res.json({
+                        loggedIn: true,
+                        userId: req.session.userId,
+                        userData: req.session.userData
+                    })
+                })
+                .catch(err => next(err))
+            }
+
+            updateCurrentUser()
+            // res.json({
+            //     loggedIn: true,
+            //     userId: req.session.userId,
+            //     userData: user
+            // })
           } else {
             const err = {
                 status: 400,

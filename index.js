@@ -126,7 +126,7 @@ app.get('/find-user', (req, res, next) => {
 
 // To update User Documents
 app.patch('/update', mid.requiresLogin , (req, res, next) => {
-    console.log('UPDATE IYA YIN')
+    console.log('UPDATE YIN')
     const {...items} = req.body
     
     User.updateOne({_id: req.session.userId}, {$set: {...items}})

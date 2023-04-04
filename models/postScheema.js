@@ -14,6 +14,10 @@ const postSchema = new Schema({
         type: String,
         requires: true
     },
+    authorPhoto: {
+        type: String,
+        requires: false
+    },
     body: {
         type: String,
         required: true

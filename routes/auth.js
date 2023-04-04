@@ -4,29 +4,85 @@ const bcrypt = require('bcryptjs')
 const mid = require('../middleware/index')
 // const myModule = require('../index')
 // const {loggeIn} = require('../index')
+const cloudinary = require('cloudinary').v2
 const router = express.Router()
 
 
 // code to handle Signinig up / creating User
-router.post('/sign-up', mid.AlreadyLogged , (req, res, next) => {
-    // Note: I'm receiving json obj from req & express.json() is the req.body object readable. 
-    const newUser = new User ({...req.body})
+router.post('/sign-up', mid.AlreadyLogged , async (req, res, next) => {
 
-    newUser.save()
-        .then ((data) => {
-            console.log(data)
-            const {name, username, bio, photo, posts, age, _id} = data
+    const user = await User.findOne({ email: req.body.email });
+    const username = await User.findOne({username: req.body.username})
 
-            req.session.userId = data._id
-            req.session.userData = {name, username, bio, photo, age, posts, _id}
+    if (user) {
+        let err = {
+            status: 401,
+            message: "Email Already Exists"
+        }
+        return next(err)
+    } else if (username) {
+        let err = {
+            status: 401,
+            message: 'Username Already Exists'
+        }
+        return next(err)
+    } else if (req.body.password < 8 || req.body.username < 5) {
+        let err = {
+            status: 401,
+            message: "min password/username length = 8/5"
+        }
+        return next(err)
+    }
 
-            res.json({
-                'user': 'A new User Has being Created'
+    if (req.body.photo !== '') {
+        try {
+            const result = await cloudinary.uploader.upload(req.body.photo); // saving the image file to cloudinary
+            
+            // Note: I'm receiving json obj from req & express.json() is the req.body object readable.
+            const newUser = new User ({...req.body, photo: result.secure_url})
+
+            newUser.save()
+                .then ((data) => {
+                    console.log(data)
+                    const {name, username, bio, photo, posts, age, _id} = data
+    
+                    req.session.userId = data._id
+                    req.session.userData = {name, username, bio, photo, age, posts, _id}
+    
+                    res.json({
+                        'user': 'A new User Has being Created'
+                    })
+                })
+                .catch((err) => {
+                    return next(err)
+                })
+    
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ err: err });
+        }
+    }
+    
+    else {
+        // Note: I'm receiving json obj from req & express.json() is the req.body object readable. 
+        const newUser = new User ({...req.body})
+
+        newUser.save()
+            .then ((data) => {
+                console.log(data)
+                const {name, username, bio, photo, posts, age, _id} = data
+
+                req.session.userId = data._id
+                req.session.userData = {name, username, bio, photo, age, posts, _id}
+
+                res.json({
+                    'user': 'A new User Has being Created'
+                })
             })
-        })
-        .catch((err) => {
-            return next(err)
-        })
+            .catch((err) => {
+                return next(err)
+            })
+    }
 })
 
 // code to handle Log IN
@@ -73,11 +129,6 @@ router.post('/log-in', async (req, res, next) => {
             }
 
             updateCurrentUser()
-            // res.json({
-            //     loggedIn: true,
-            //     userId: req.session.userId,
-            //     userData: user
-            // })
           } else {
             const err = {
                 status: 400,
@@ -95,6 +146,22 @@ router.post('/log-in', async (req, res, next) => {
         } catch (error) {
             next(error)
     }
+})
+
+// To Handle Logging Out
+router.post('/logout', mid.requiresLogin ,(req, res) => {
+
+    req.session.destroy((err) => {
+        if (err) {
+            return next(err)            
+        }
+
+        return res.json({
+            status: 201,
+            message: 'You are logged out'
+        })
+    })
+
 })
 
 // exporting the router

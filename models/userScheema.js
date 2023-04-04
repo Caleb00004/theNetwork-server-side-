@@ -30,9 +30,11 @@ const userScheema = new Scheema({
     },
     photo: {
         type: String,
-        default: '/path/to/image',
+        default: '',
     },
-    // likedPost
+    likedPost: {
+        type: Array
+    },
     // age: {
     //     type: Number,
     //     required: true

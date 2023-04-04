@@ -22,6 +22,7 @@ let testVar = 'mikeJackson'
 
 // const dbURI = `mongodb://localhost:27017`
 const dbURI = `mongodb+srv://calebakpan7:VyXnsAIADBEJnNZT@cluster0.umga76a.mongodb.net/theNetwork?retryWrites=true&w=majority`
+
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then ((response) => (
         console.log('connected to database'),
@@ -116,7 +117,7 @@ app.get('/all-users', (req,res,next) => {
         .catch(err => next(err))
 })
 
-// Authentication Routes (/Sign-up, /log-in, /logOut )
+// Authentication Routes (/sign-up, /log-in, /logout )
 app.use(authRoutes)
 // Post Routes (/add-post, /add-comment, /like-UnlikePost )
 app.use(postRoutes)

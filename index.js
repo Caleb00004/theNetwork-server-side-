@@ -91,6 +91,7 @@ app.get('/', async (req, res) => {
 
 // To check if user is logged IN 
 app.get('/logged-in', (req, res) => {
+    console.log(req.session)
     if (req.session.userId) {
         return res.send({...req.session })
     } else {

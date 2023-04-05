@@ -43,7 +43,7 @@ router.post('/sign-up', mid.AlreadyLogged , async (req, res, next) => {
 
             newUser.save()
                 .then ((data) => {
-                    console.log(data)
+                    // console.log(data)
                     const {name, username, bio, photo, posts, age, _id} = data
     
                     req.session.userId = data._id
@@ -69,7 +69,7 @@ router.post('/sign-up', mid.AlreadyLogged , async (req, res, next) => {
 
         newUser.save()
             .then ((data) => {
-                console.log(data)
+                // console.log(data)
                 const {name, username, bio, photo, posts, age, _id} = data
 
                 req.session.userId = data._id

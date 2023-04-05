@@ -58,12 +58,12 @@ app.use(session({
         mongoUrl: dbURI,
         ttl: 14 * 24 * 60 * 60,
         autoRemove: 'native'
-    })
-    // cookie: {
-    //     sameSite: 'none',
-    //     secure: true,
-    //     httpOnly: false
-    //   }
+    }),
+    cookie: {
+        sameSite: 'none',
+        // secure: true,
+        // httpOnly: false
+      }
 }))
 
 app.use(bodyParser.json({ limit: '50mb' }));

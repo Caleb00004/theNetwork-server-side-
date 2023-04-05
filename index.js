@@ -72,7 +72,7 @@ app.use((req, res, next) => {
 
 app.use(cors({
     // origin: ["http://localhost:3000", "http://192.168.194.235:3000"],
-    origin: 'https://the-network-bice.vercel.app/',
+    origin: 'https://the-network-bice.vercel.app',
     credentials: true
 }))
 

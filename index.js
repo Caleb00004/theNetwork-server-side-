@@ -70,10 +70,10 @@ app.use((req, res, next) => {
     next();
 })
 
-// app.use(cors({
-//     // origin: "http://localhost:3000",
-//     credentials: true
-// }))
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}))
 
 app.use(express.urlencoded()) // middleware for accepting form data
 app.use(express.json()) // To parse any json gotten from the request. so it can be readable

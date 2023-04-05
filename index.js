@@ -8,6 +8,7 @@ const cors = require('cors')
 
 const authRoutes = require('./routes/auth')
 const postRoutes = require('./routes/posts')
+const MongoStore = require('connect-mongo')
 
 const session = require('express-session')
 const cloudinary = require('cloudinary').v2
@@ -51,8 +52,13 @@ cloudinary.config({
 // setting up session.
 app.use(session({
     secret: 'secret-key',
-    resave: true,
-    saveUninitialized: false,
+    resave: true, // forces session to be saved in the session store
+    saveUninitialized: false, // forces an unitialized to not be saved in the session store.
+    store: MongoStore.create({
+        mongoUrl: dbURI,
+        ttl: 14 * 24 * 60 * 60,
+        autoRemove: 'native'
+    })
     // cookie: {
     //     sameSite: 'none',
     //     secure: true,
@@ -71,8 +77,8 @@ app.use((req, res, next) => {
 })
 
 app.use(cors({
-    origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
-    // origin: 'https://the-network-bice.vercel.app',
+    // origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
+    origin: 'https://the-network-bice.vercel.app',
     credentials: true
 }))
 

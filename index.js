@@ -55,7 +55,7 @@ app.use(session({
     resave: true, // forces session to be saved in the session store
     saveUninitialized: false, // forces an unitialized to not be saved in the session store.
     store: MongoStore.create({
-        mongoUrl: dbURI,
+        mongoUrl: process.env.mongoURI,
         ttl: 14 * 24 * 60 * 60,
         autoRemove: 'native'
     }),

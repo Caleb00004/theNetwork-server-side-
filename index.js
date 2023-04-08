@@ -13,16 +13,16 @@ const MongoStore = require('connect-mongo')
 const session = require('express-session')
 const cloudinary = require('cloudinary').v2
 const bodyParser = require('body-parser')
+const dotenv = require('dotenv').config()
 
 const app = express()
 
+ 
+// console.log(process.env.session_secret)
 let testVar = 'mikeJackson'
-// passowrd: VyXnsAIADBEJnNZT
-// mongodb+srv://calebakpan7:<password>@cluster0.umga76a.mongodb.net/?retryWrites=true&w=majority
-
 
 // const dbURI = `mongodb://localhost:27017`
-const dbURI = `mongodb+srv://calebakpan7:VyXnsAIADBEJnNZT@cluster0.umga76a.mongodb.net/theNetwork?retryWrites=true&w=majority`
+const dbURI = process.env.mongoURI
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then ((response) => (
@@ -43,15 +43,15 @@ app.use((req,res,next) => {
 
 // configuring cloudinary
 cloudinary.config({
-    cloud_name: 'drw3nkibt',
-    api_key: '237676847741729',
-    api_secret: 'ZvBkQGf4zUwZrbsN3YzKswN1WL0'
+    cloud_name: process.env.cloudinary_cloud_Name,
+    api_key: process.env.cloudinary_api_key,
+    api_secret: process.env.cloudinary_api_secret
 });
 
 
 // setting up session.
 app.use(session({
-    secret: 'secret-key',
+    secret: process.env.session_secret,
     resave: true, // forces session to be saved in the session store
     saveUninitialized: false, // forces an unitialized to not be saved in the session store.
     store: MongoStore.create({
@@ -77,8 +77,8 @@ app.use((req, res, next) => {
 })
 
 app.use(cors({
-    origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
-    // origin: 'https://the-network-bice.vercel.app',
+    // origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
+    origin: 'https://the-network-bice.vercel.app',
     credentials: true
 }))
 

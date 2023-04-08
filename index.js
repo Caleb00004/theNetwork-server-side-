@@ -21,8 +21,9 @@ const app = express()
 // console.log(process.env.session_secret)
 let testVar = 'mikeJackson'
 
-// const dbURI = `mongodb://localhost:27017`
-const dbURI = process.env.mongoURI
+// const dbURI = `mongodb://localhost:27017` 
+const dbURI = `mongodb://127.0.0.1:27017` 
+// const dbURI = process.env.mongoURI
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then ((response) => (
@@ -55,15 +56,16 @@ app.use(session({
     resave: true, // forces session to be saved in the session store
     saveUninitialized: false, // forces an unitialized to not be saved in the session store.
     store: MongoStore.create({
-        mongoUrl: process.env.mongoURI,
+        // mongoUrl: process.env.mongoURI,
+        mongoUrl: dbURI,
         ttl: 14 * 24 * 60 * 60,
         autoRemove: 'native'
     }),
-    cookie: {
-        sameSite: 'none',
-        secure: true,
-        httpOnly: false
-      }
+    // cookie: {
+    //     sameSite: 'none',
+    //     secure: true,
+    //     httpOnly: false
+    //   }
 }))
 
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -77,8 +79,8 @@ app.use((req, res, next) => {
 })
 
 app.use(cors({
-    // origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
-    origin: 'https://the-network-bice.vercel.app',
+    origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
+    // origin: 'https://the-network-bice.vercel.app',
     credentials: true
 }))
 

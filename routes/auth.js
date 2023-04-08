@@ -2,8 +2,6 @@ const express = require('express')
 const User = require('../models/userScheema')
 const bcrypt = require('bcryptjs')
 const mid = require('../middleware/index')
-// const myModule = require('../index')
-// const {loggeIn} = require('../index')
 const cloudinary = require('cloudinary').v2
 const router = express.Router()
 

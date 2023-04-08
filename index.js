@@ -48,8 +48,8 @@ cloudinary.config({
     api_secret: process.env.cloudinary_api_secret
 });
 
-// setting trust proxy
-app.set("trust proxy", 1);
+// // setting trust proxy
+// app.set("trust proxy", 1);
 
 // setting up session.
 app.use(session({
@@ -57,7 +57,8 @@ app.use(session({
     resave: true, // forces session to be saved in the session store
     saveUninitialized: false, // forces an unitialized to not be saved in the session store.
     store: MongoStore.create({
-        mongoUrl: process.env.mongoURI,
+        // mongoUrl: process.env.mongoURI,
+        mongoUrl: dbURI,
         ttl: 14 * 24 * 60 * 60,
         autoRemove: 'native'
     }),
@@ -133,33 +134,47 @@ app.use(authRoutes)
 app.use(postRoutes)
 
 // To Find Specific User
-app.post('/find-account', async (req, res, next) => {
-    const pipeline = [
-        {
-            $lookup: {
-            from: 'posts',
-            localField: 'username',
-            foreignField: 'authorUserName',
-            as: 'posts'
-            }
-        },
-        // {$out: "users"}
-    ];
+app.post('/find-account', (req, res, next) => {
+    
+    const {username: findUserName} = req.body
 
-    User.aggregate(pipeline)
-    .then(data => {
-        const filtered = data.filter(data => data.username == req.body.username)
-        console.log(filtered)
+    const isObjectEmpty = Object.keys(req.body).length === 0
 
-        const {name, username, posts, bio, photo} = filtered[0]
+    if (!isObjectEmpty) {
+        const pipeline = [
+            {
+                $lookup: {
+                from: 'posts',
+                localField: 'username',
+                foreignField: 'authorUserName',
+                as: 'posts'
+                }
+            },
+            // {$out: "users"}
+        ];
 
-        res.json({
-            status: 201,
-            data: {name, username, posts, bio, photo}
-        })
-    })
-    .catch(err => next(err))
+        console.log('FILTERING DATA!!!')
+        User.aggregate(pipeline)
+            .then(data => {
+                const filtered = data.filter(data => data.username == findUserName)
 
+                if (!filtered[0]) {
+                    err = {
+                        status: '401',
+                        message: "User Dose'nt exist"
+                    }
+                    return next(err)
+                }
+                const {name, username, posts, bio, photo} = filtered[0]
+
+                res.json({
+                    status: 201,
+                    data: {name, username, posts, bio, photo}
+                })
+            })
+            .catch(err => next(err))
+
+    }
 })
 
 // To update User Documents
@@ -180,7 +195,7 @@ app.patch('/update', mid.requiresLogin , (req, res, next) => {
 
 // To handle errors
 app.use((err, req, res, next) => {
-    console.log("I AM HERE")
+    console.log("ERROR HANDLER")
     console.log(err)
     res.status(err.status || 500)
     res.json({

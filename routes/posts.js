@@ -4,10 +4,6 @@ const mid = require('../middleware/index')
 const User = require('../models/userScheema')
 const router = express.Router()
 
-// passowrd: VyXnsAIADBEJnNZT
-
-// mongodb+srv://calebakpan7:<password>@cluster0.umga76a.mongodb.net/?retryWrites=true&w=majority
-
 // code to handle Creating & Saving New Post
 router.post('/new-post', mid.requiresLogin , async (req, res, next) => {
     const {authorName, authorUserName, body, photo} = req.body

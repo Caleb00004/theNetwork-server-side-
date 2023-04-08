@@ -48,6 +48,8 @@ cloudinary.config({
     api_secret: process.env.cloudinary_api_secret
 });
 
+// setting trust proxy
+app.set("trust proxy", 1);
 
 // setting up session.
 app.use(session({
@@ -59,11 +61,11 @@ app.use(session({
         ttl: 14 * 24 * 60 * 60,
         autoRemove: 'native'
     }),
-    // cookie: {
-    //     sameSite: 'none',
-    //     secure: true,
-    //     httpOnly: false
-    //   }
+    cookie: {
+        sameSite: 'none',
+        secure: true,
+        // httpOnly: false
+      }
 }))
 
 app.use(bodyParser.json({ limit: '50mb' }));

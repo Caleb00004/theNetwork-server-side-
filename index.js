@@ -48,8 +48,8 @@ cloudinary.config({
     api_secret: process.env.cloudinary_api_secret
 });
 
-// // setting trust proxy
-// app.set("trust proxy", 1);
+// setting trust proxy
+app.set("trust proxy", 1);
 
 // setting up session.
 app.use(session({
@@ -57,8 +57,8 @@ app.use(session({
     resave: true, // forces session to be saved in the session store
     saveUninitialized: false, // forces an unitialized to not be saved in the session store.
     store: MongoStore.create({
-        // mongoUrl: process.env.mongoURI,
-        mongoUrl: dbURI,
+        mongoUrl: process.env.mongoURI,
+        // mongoUrl: dbURI,
         ttl: 14 * 24 * 60 * 60,
         autoRemove: 'native'
     }),

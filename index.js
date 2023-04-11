@@ -78,9 +78,6 @@ app.use(express.urlencoded()) // middleware for accepting form data
 app.use(express.json()) // To parse any json gotten from the request. so it can be readable
 
 app.get('/', async (req, res) => {
-    const user = await User.find()
-    console.log(user)
-
     res.json({
         status: 201,
         message: "No Data on this route, try GET '/all-post', '/logged-in' "

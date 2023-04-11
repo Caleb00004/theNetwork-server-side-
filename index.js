@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const express = require('express')
 const Posts = require('./models/postScheema')
 const User = require('./models/userScheema')
-const multer = require('multer')
 const mid = require('./middleware/index')
 const cors = require('cors')
 
@@ -17,17 +16,14 @@ const dotenv = require('dotenv').config()
 
 const app = express()
 
- 
-// console.log(process.env.session_secret)
 let testVar = 'mikeJackson'
 
-// const dbURI = `mongodb://127.0.0.1:27017` 
 const dbURI = process.env.mongoURI
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then ((response) => (
         console.log('connected to database'),
-        app.listen(3500)
+        app.listen(process.env.PORT)
     ))
     .catch((err) => console.log(err))
 
@@ -72,16 +68,9 @@ app.use(session({
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// making session available to whole app
-app.use((req, res, next) => {
-    res.locals.currentUser = req.session.userId 
-    console.log("SECOND MIDDLE FUNC")
-    next();
-})
-
+// setting up cors
 app.use(cors({
-    origin: ["http://localhost:3000", "https://the-network-bice.vercel.app"],
-    // origin: 'https://the-network-bice.vercel.app',
+    origin: process.env.cors_origin,
     credentials: true
 }))
 
